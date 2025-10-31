@@ -7,10 +7,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Balance extends Model
 {
-    protected $fillable = ['user_id', 'amount'];
+    protected $fillable = ['user_id', 'balance'];
 
     protected $casts = [
-        'amount' => 'decimal:2',
+        'balance' => 'decimal:2',
     ];
 
     public function user(): BelongsTo
