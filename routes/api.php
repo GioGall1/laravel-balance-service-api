@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\BalanceController;
 
 
 
@@ -11,3 +12,5 @@ use Illuminate\Support\Facades\Route;
 | Эти маршруты получают префикс /api и middleware "api"
 | (см. bootstrap/app.php → withRouting()).
 */
+
+Route::get('/balance/{userId}', [BalanceController::class, 'show']);
