@@ -1,7 +1,8 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Exceptions\UserNotFoundException;
+
+
 
 /*
 |--------------------------------------------------------------------------
@@ -10,7 +11,3 @@ use App\Exceptions\UserNotFoundException;
 | Эти маршруты получают префикс /api и middleware "api"
 | (см. bootstrap/app.php → withRouting()).
 */
-
-Route::get('/test-error', function () {
-    throw new UserNotFoundException();
-});
