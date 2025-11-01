@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers\Finance;
 
+use App\Dto\WithdrawDto;
 use App\Http\Controllers\Controller;
 use App\Services\Finance\WithdrawService;
-use App\Dto\WithdrawDto;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 
@@ -20,11 +20,7 @@ class WithdrawController extends Controller
             'comment' => 'nullable|string|max:255',
         ]);
 
-        $dto = new WithdrawDto(
-            $validated['user_id'],
-            $validated['amount'],
-            $validated['comment'] ?? null
-        );
+        $dto = new WithdrawDTO($validated);
 
         $this->service->withdraw($dto);
 
