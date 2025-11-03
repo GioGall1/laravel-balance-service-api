@@ -6,25 +6,27 @@ use App\DTO\DepositDTO;
 use App\Models\Balance;
 use App\Models\Transaction;
 use App\Enums\TransactionType;
-use App\Exceptions\UserNotFoundException;
 use Illuminate\Support\Facades\DB;
 
-class DepositService
+/**
+ * Сервис пополнения средств пользователя.
+ */
+final class DepositService
 {
     public function deposit(DepositDTO $dto): void
     {
         DB::transaction(function () use ($dto) {
-            $balance = Balance::firstOrCreate(
+            Balance::firstOrCreate(
                 ['user_id' => $dto->user_id],
                 ['balance' => 0]
             );
 
-            $balance->balance += $dto->amount;
-            $balance->save();
+            Balance::where('user_id', $dto->user_id)
+                ->increment('balance', $dto->amount);
 
             Transaction::create([
                 'user_id' => $dto->user_id,
-                'type' => TransactionType::Deposit,
+                'type' => TransactionType::Deposit->value,
                 'amount' => $dto->amount,
                 'comment' => $dto->comment,
             ]);

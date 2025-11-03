@@ -7,102 +7,61 @@ use App\Enums\TransactionType;
 use App\Exceptions\InsufficientFundsException;
 use App\Exceptions\UserNotFoundException;
 use App\Models\Transaction;
-use App\Models\User;
 use App\Models\Balance;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
 
-class TransferService
+/**
+ * Сервис перевода средств между пользователями.
+ */
+final class TransferService
 {
-    public function handle(TransferDto $dto): array
+    public function handle(TransferDto $dto): void
     {
-        return DB::transaction(function () use ($dto) {
+       DB::transaction(function () use ($dto) {
 
-            $fromUser = User::query()->find($dto->from_user_id);
-            $toUser   = User::query()->find($dto->to_user_id);
+            $existingIds = DB::table('users')
+                ->whereIn('id', [$dto->from_user_id, $dto->to_user_id])
+                ->pluck('id')
+                ->all();
 
-            if (!$fromUser || !$toUser) {
+            if (!in_array($dto->from_user_id, $existingIds, true) || !in_array($dto->to_user_id, $existingIds, true)) {
                 throw new UserNotFoundException('Один из пользователей не найден.');
             }
-            if ($fromUser->id === $toUser->id) {
+
+            if ($dto->from_user_id === $dto->to_user_id) {
                 throw new RuntimeException('Нельзя переводить самому себе.');
             }
 
-            $ids = [$fromUser->id, $toUser->id];
-            sort($ids);
+            Balance::firstOrCreate(['user_id' => $dto->from_user_id], ['balance' => 0]);
+            Balance::firstOrCreate(['user_id' => $dto->to_user_id], ['balance' => 0]);
 
-            $balances = Balance::query()
-                ->whereIn('user_id', $ids)
-                ->lockForUpdate()
-                ->get()
-                ->keyBy('user_id');
+            $debited = Balance::where('user_id', $dto->from_user_id)
+                ->where('balance', '>=', $dto->amount)
+                ->decrement('balance', $dto->amount);
 
-            foreach ($ids as $uid) {
-                if (!isset($balances[$uid])) {
-                    $balances[$uid] = Balance::query()->create([
-                        'user_id' => $uid,
-                        'balance' => 0,
-                    ]);
-                }
-            }
-
-            $fromBal = $balances[$fromUser->id];
-            $toBal   = $balances[$toUser->id];
-
-            $amountCents = (int) round($dto->amount * 100);
-            if ($amountCents <= 0) {
-                throw new RuntimeException('Сумма перевода должна быть больше нуля.');
-            }
-
-            $fromCents = (int) round(((float)$fromBal->balance) * 100);
-            $toCents   = (int) round(((float)$toBal->balance)   * 100);
-
-            if ($fromCents < $amountCents) {
+            if ($debited === 0) {
                 throw new InsufficientFundsException('Недостаточно средств.');
             }
 
-            $fromCents -= $amountCents;
-            $toCents   += $amountCents;
+            Balance::where('user_id', $dto->to_user_id)
+                ->increment('balance', $dto->amount);
 
-            $fromBal->balance = $fromCents / 100;
-            $fromBal->save();
-
-            $toBal->balance = $toCents / 100;
-            $toBal->save();
-
-            $outTx = Transaction::query()->create([
-                'user_id'         => $fromUser->id,
-                'related_user_id' => $toUser->id,
+            Transaction::create([
+                'user_id'         => $dto->from_user_id,
+                'related_user_id' => $dto->to_user_id,
                 'type'            => TransactionType::TransferOut->value,
                 'amount'          => $dto->amount,
                 'comment'         => $dto->comment,
             ]);
 
-            $inTx = Transaction::query()->create([
-                'user_id'         => $toUser->id,
-                'related_user_id' => $fromUser->id,
+            Transaction::create([
+                'user_id'         => $dto->to_user_id,
+                'related_user_id' => $dto->from_user_id,
                 'type'            => TransactionType::TransferIn->value,
                 'amount'          => $dto->amount,
                 'comment'         => $dto->comment,
             ]);
-
-            return [
-                'success' => true,
-                'data' => [
-                    'from_user' => [
-                        'id'      => $fromUser->id,
-                        'balance' => (float)$fromBal->balance,
-                        'transaction_id' => $outTx->id,
-                    ],
-                    'to_user' => [
-                        'id'      => $toUser->id,
-                        'balance' => (float)$toBal->balance,
-                        'transaction_id' => $inTx->id,
-                    ],
-                    'amount'  => (float)$dto->amount,
-                    'comment' => $dto->comment,
-                ],
-            ];
         });
     }
 }
