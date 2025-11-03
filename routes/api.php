@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\BalanceController;
+use App\Http\Controllers\Finance\BalanceController;
 use App\Http\Controllers\Finance\DepositController;
 use App\Http\Controllers\Finance\WithdrawController;
 use App\Http\Controllers\Finance\TransferController;
