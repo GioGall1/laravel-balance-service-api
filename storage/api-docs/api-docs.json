@@ -1,0 +1,297 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Laravel Balance API",
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://localhost",
+            "description": "Local"
+        }
+    ],
+    "paths": {
+        "/api/balance/{userId}": {
+            "get": {
+                "tags": [
+                    "Finance"
+                ],
+                "summary": "Текущий баланс пользователя",
+                "operationId": "59fa28a20def80326f6bd1dade4fac27",
+                "parameters": [
+                    {
+                        "name": "userId",
+                        "in": "path",
+                        "description": "ID пользователя",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Ок",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "user_id": {
+                                            "type": "integer",
+                                            "example": 1
+                                        },
+                                        "balance": {
+                                            "type": "string",
+                                            "example": "150.00"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/deposit": {
+            "post": {
+                "tags": [
+                    "Finance"
+                ],
+                "summary": "Пополнение баланса",
+                "operationId": "706a2675354303382a45654d6c52b65e",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "user_id",
+                                    "amount"
+                                ],
+                                "properties": {
+                                    "user_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "amount": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 200
+                                    },
+                                    "comment": {
+                                        "type": "string",
+                                        "example": "Покупка подписки"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Успех",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Средства успешно зачислены."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/transfer": {
+            "post": {
+                "tags": [
+                    "Finance"
+                ],
+                "summary": "Перевод средств между пользователями",
+                "operationId": "bc5838f99ebb966c8daf47fe8eaa14cc",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "from_user_id",
+                                    "to_user_id",
+                                    "amount"
+                                ],
+                                "properties": {
+                                    "from_user_id": {
+                                        "description": "ID отправителя",
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "to_user_id": {
+                                        "description": "ID получателя",
+                                        "type": "integer",
+                                        "example": 2
+                                    },
+                                    "amount": {
+                                        "description": "Сумма перевода",
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 50
+                                    },
+                                    "comment": {
+                                        "type": "string",
+                                        "example": "Перевод другу"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Перевод успешно выполнен",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Перевод выполнен."
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "from_user_id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "to_user_id": {
+                                                    "type": "integer",
+                                                    "example": 2
+                                                },
+                                                "amount": {
+                                                    "type": "string",
+                                                    "example": "50.00"
+                                                },
+                                                "comment": {
+                                                    "type": "string",
+                                                    "example": "Перевод другу"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Ошибка перевода (например, недостаточно средств или одинаковые пользователи)"
+                    }
+                }
+            }
+        },
+        "/api/withdraw": {
+            "post": {
+                "tags": [
+                    "Finance"
+                ],
+                "summary": "Списание средств с баланса пользователя",
+                "operationId": "5814bee2dda8e9ed1aa09b0d33709751",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "user_id",
+                                    "amount"
+                                ],
+                                "properties": {
+                                    "user_id": {
+                                        "description": "ID пользователя",
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "amount": {
+                                        "description": "Сумма списания",
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 100
+                                    },
+                                    "comment": {
+                                        "type": "string",
+                                        "example": "Оплата услуг"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Успешное списание средств",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Списание средств успешно выполнено"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Недостаточно средств или некорректные данные",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Недостаточно средств на балансе"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Finance",
+            "description": "Finance"
+        }
+    ]
+}
