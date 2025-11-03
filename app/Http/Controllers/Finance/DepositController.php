@@ -4,23 +4,22 @@ namespace App\Http\Controllers\Finance;
 
 use App\DTO\DepositDTO;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Finance\DepositRequest;
 use App\Services\Finance\DepositService;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+
+/**
+ * Контроллер для обработки операций пополнения баланса пользователя.
+ */
 
 class DepositController extends Controller
 {
     public function __construct(private DepositService $service) {}
 
-    public function store(Request $request): JsonResponse
+    public function store(DepositRequest $request): JsonResponse
     {
-        $data = $request->validate([
-            'user_id' => ['required', 'integer', 'exists:users,id'],
-            'amount'  => ['required', 'numeric', 'min:0.01'],
-            'comment' => ['nullable', 'string', 'max:255'],
-        ]);
 
-        $dto = new DepositDTO($data);
+        $dto = new DepositDTO($request->validated());
         $this->service->deposit($dto);
 
         return response()->json([
