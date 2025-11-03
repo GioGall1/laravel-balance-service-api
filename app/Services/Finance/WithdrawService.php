@@ -3,35 +3,37 @@
 namespace App\Services\Finance;
 
 use App\Dto\WithdrawDto;
-use App\Models\User;
 use App\Models\Balance;
 use App\Models\Transaction;
 use App\Enums\TransactionType;
-use Illuminate\Validation\ValidationException;
+use App\Exceptions\InsufficientFundsException;
 use Illuminate\Support\Facades\DB;
 
+/**
+ * Сервис списания средств пользователя.
+ */
 class WithdrawService
 {
      public function withdraw(WithdrawDto $dto): void
     {
         DB::transaction(function () use ($dto) {
-            $balance = Balance::firstOrCreate(
+           Balance::firstOrCreate(
                 ['user_id' => $dto->user_id],
                 ['balance' => 0]
             );
 
-            if ($balance->balance < $dto->amount) {
-                throw ValidationException::withMessages([
-                    'amount' => 'Недостаточно средств на балансе.',
-                ]);
-            }
+            $updated = Balance::where('user_id', $dto->user_id)
+                ->where('balance', '>=', $dto->amount)
+                ->decrement('balance', $dto->amount);
 
-            $balance->balance -= $dto->amount;
-            $balance->save();
+
+             if ($updated === 0) {
+                throw new InsufficientFundsException('Недостаточно средств на балансе.');
+            }
 
             Transaction::create([
                 'user_id' => $dto->user_id,
-                'type'    => TransactionType::Withdraw,
+                'type'    => TransactionType::Withdraw->value,
                 'amount'  => -$dto->amount,
                 'comment' => $dto->comment,
             ]);
