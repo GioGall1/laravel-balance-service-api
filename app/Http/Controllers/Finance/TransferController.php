@@ -3,29 +3,33 @@
 namespace App\Http\Controllers\Finance;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use App\Http\Requests\Finance\TransferRequest;
 use Illuminate\Http\JsonResponse;
 use App\DTO\TransferDto;
 use App\Services\Finance\TransferService;
 
+/**
+ * Контроллер для обработки операций перевода баланса пользователю.
+ */
 class TransferController extends Controller
 {
-    public function __construct(private readonly TransferService $service)
-    {
-    }
+    public function __construct(private readonly TransferService $service) {}
 
-    public function store(Request $request): JsonResponse
+    public function store(TransferRequest $request): JsonResponse
     {
-        $data = $request->validate([
-            'from_user_id' => 'required|integer|different:to_user_id|exists:users,id',
-            'to_user_id'   => 'required|integer|exists:users,id',
-            'amount'       => 'required|numeric|gt:0',
-            'comment'      => 'nullable|string|max:255',
-        ]);
 
-        $dto = new TransferDto($data);
+        $dto = new TransferDTO($request->validated());
         $result = $this->service->handle($dto);
 
-        return response()->json($result, 201);
+        return response()->json([
+        'status'  => 'success',
+        'message' => 'Перевод выполнен.',
+        'data'    => [
+            'from_user_id' => $dto->from_user_id,
+            'to_user_id'   => $dto->to_user_id,
+            'amount'       => number_format($dto->amount, 2, '.', ''),
+            'comment'      => $dto->comment,
+        ],
+        ], 201);
     }
 }
