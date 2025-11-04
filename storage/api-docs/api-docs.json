@@ -17,7 +17,7 @@
                     "Finance"
                 ],
                 "summary": "Текущий баланс пользователя",
-                "operationId": "59fa28a20def80326f6bd1dade4fac27",
+                "operationId": "1c3474b7424c763ec56a8de85175d15c",
                 "parameters": [
                     {
                         "name": "userId",

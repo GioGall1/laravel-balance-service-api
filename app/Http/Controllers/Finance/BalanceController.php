@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Finance;
 
 use App\Http\Controllers\Controller;
-use App\Services\Finance\BalanceService;
+use App\UseCases\Finance\GetUserBalance;
 use Illuminate\Http\JsonResponse;
 use OpenApi\Annotations as OA;
 
@@ -31,9 +31,11 @@ class BalanceController extends Controller
      *   )
      * )
      */
-    public function show(int $userId, BalanceService $service): JsonResponse
+    public function __construct(private readonly GetUserBalance $useCase) {}
+
+    public function show(int $userId): JsonResponse
     {
-        $amount = $service->getBalance($userId);
+        $amount = $this->useCase->handle($userId);
 
         return response()->json([
             'user_id' => $userId,

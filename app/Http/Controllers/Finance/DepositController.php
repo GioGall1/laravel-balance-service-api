@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Finance;
 use App\DTO\DepositDTO;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Finance\DepositRequest;
-use App\Services\Finance\DepositService;
+use App\UseCases\Finance\DepositFunds;
 use Illuminate\Http\JsonResponse;
 use OpenApi\Annotations as OA;
 
@@ -38,13 +38,13 @@ class DepositController extends Controller
      *   )
      * )
      */
-    public function __construct(private DepositService $service) {}
+    public function __construct(private readonly DepositFunds $useCase) {}
 
     public function store(DepositRequest $request): JsonResponse
     {
 
         $dto = new DepositDTO($request->validated());
-        $this->service->deposit($dto);
+        $this->useCase->execute($dto);
 
         return response()->json([
             'status' => 'success',
