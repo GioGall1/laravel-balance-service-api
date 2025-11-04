@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Finance;
 use App\Dto\WithdrawDto;
 use App\Http\Requests\Finance\WithdrawRequest;
 use App\Http\Controllers\Controller;
-use App\Services\Finance\WithdrawService;
+use App\UseCases\Finance\WithdrawFunds;
 use Illuminate\Http\JsonResponse;
 use OpenApi\Annotations as OA;
 
@@ -46,13 +46,13 @@ class WithdrawController extends Controller
      *   )
      * )
      */
-   public function __construct(private WithdrawService $service) {}
+   public function __construct(private readonly WithdrawFunds $useCase) {}
 
     public function store(WithdrawRequest $request): JsonResponse
     {
 
         $dto = new WithdrawDTO($request->validated());
-        $this->service->withdraw($dto);
+        $this->useCase->handle($dto);
 
         return response()->json([
             'status'  => 'success',

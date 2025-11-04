@@ -1,14 +1,14 @@
 <?php
 
-namespace App\Services\Finance;
+namespace App\UseCases\Finance;
 
 use App\Exceptions\UserNotFoundException;
 use App\Models\Balance;
 use App\Models\User;
 
-class BalanceService
+class GetUserBalance
 {
-    public function getBalance(int $userId): string
+    public function handle(int $userId): string
     {
         $user = User::query()->find($userId);
         if (!$user) {

@@ -5,8 +5,8 @@ namespace App\Http\Controllers\Finance;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Finance\TransferRequest;
 use Illuminate\Http\JsonResponse;
-use App\DTO\TransferDto;
-use App\Services\Finance\TransferService;
+use App\UseCases\Finance\TransferFunds;
+use App\DTO\TransferDTO;
 use OpenApi\Annotations as OA;
 
 /**
@@ -49,13 +49,13 @@ class TransferController extends Controller
      *   )
      * )
      */
-    public function __construct(private readonly TransferService $service) {}
+    public function __construct(private readonly TransferFunds $useCase) {}
 
     public function store(TransferRequest $request): JsonResponse
     {
 
         $dto = new TransferDTO($request->validated());
-        $this->service->handle($dto);
+        $this->useCase->execute($dto);
 
         return response()->json([
         'status'  => 'success',
